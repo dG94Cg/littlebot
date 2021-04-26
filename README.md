@@ -107,7 +107,7 @@ add lua file with ``require "bot.command"`` if you wana add some function.
 
     execute only when not command match, why do i add this????
 
-- Host.hook
+- Host.msg_listen
 
     execute at everytime when message reach
 

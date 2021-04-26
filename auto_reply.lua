@@ -37,6 +37,33 @@ match_list[stupid_question] =   {
     ,   "莫要问有人没人在干啥, 有啥问啥, 莫要急躁>_<"
 }
 
+local chobsd    =   {
+    ""
+    ,   option  =   {
+            user    =   "^chobsd_*"
+        ,   len_min =   -1
+        ,   len_max =   string.len("说腻妈呢")
+    }
+}
+match_list[chobsd]  =   {
+        "腻是SPAM吧? 上来几句就跑路, 累不累?"
+    ,   "是流量太贵, 还是腻时间太急, 说几句就balabala跑了"
+    ,   "腻看看腻, 乍乍乎乎, 这是IRC好么"
+    ,   "干啥 干啥 干啥呢腻!"
+    ,   "¯\_(ツ)_/¯"
+}
+
+match_list["干啥"]  =   {
+        {
+                "腻怎么整天问干啥呀?"
+            ,   "去把TideBot重构一下呀, 这么闲"
+            ,   "瞧瞧你这出息, 在个IRC频道问别人干啥"
+            ,   "问句干啥腻就跑, 搞得咱们是吃人老虎 吓着腻了"
+            ,   option  =   {
+                user    =   "chobsd"
+            }
+        }
+}
 
 local auto_reply    =   function(msg)
     if not msg[2] then
@@ -48,6 +75,18 @@ local auto_reply    =   function(msg)
             if  type(match) == "table" then
                 for i,line in ipairs(match) do
                     if  msg[2]:match(line) then
+                        if match.option then
+                            local o = match.option
+                            if o.user and not msg[1]:match(o.user) then
+                                break
+                            end
+                            if o.len_min and msg[2]:len() < o.len_min then
+                                break
+                            end
+                            if o.len_max and msg[2]:len() > o.len_max then
+                                break
+                            end
+                        end
                         output  =   list
                         break
                     end
@@ -68,16 +107,42 @@ local auto_reply    =   function(msg)
         return
     end
 
+    -- say something that is static config
     if  type(output)    ==  "string" then
         Host.say(msg, output)
         return
     end
+
+    -- say something that read from table
     local r
+    -- find one
     repeat 
         r =   math.random(1,#output)
         log.trace("rand => %s, data => %s", r, output[r] or "None")
     until output[r]
-    Host.say(msg,output[r])
+    -- if is table
+    if type(output[r]) == "table" then
+        local o = output[r].option
+        if not o then
+            output[r].index = (output[r].index or 0 ) % #output[r] + 1
+            Host.say(msg,output[r][output[r].index] or "啊?")
+        end
+        if  o.user then
+            if not msg[2]:match(o.user) then
+                return
+            end
+            if o.len_min and msg[2]:len() < o.len_min then
+                return
+            end
+            if o.len_max and msg[2]:len() > o.len_max then
+                return
+            end
+        end
+        Host.say(msg,output[r][output[r].index] or "啊?")
+    else
+        -- said it instead
+        Host.say(msg,output[r])
+    end
 end
 
 table.insert(Host.msg_listen, auto_reply)
