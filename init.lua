@@ -25,6 +25,8 @@ Version = "0.5.1"
 -- command plugin import here
 require "bot.last"
 require "bot.query"
+require "bot.sm"
+require "bot.auto_reply"
 
 Http_match = "(https?://[%w./%d%&%=%?_+-]*)"
 
@@ -298,41 +300,6 @@ Command.say = {
     help = Message.say_help
 }
 
--- @aim mark one user with one meta
-Command.sm = {
-    execute = function(msg)
-        local rom = Storage.take "sm"
-        local _, Name, Meta = Command.sm.takeMeta(msg[2])
-        rom[Name] = rom[Name] or {}
-        local sm = rom[Name]
-        if Meta then
-            Log.debug("Command :sm [Name => " .. Name .. "] [Meta => " .. Meta .."]")
-            if not Util.contain(sm, Meta) then
-                table.insert(sm, 1, Meta)
-                rom:flush()
-                Host.say(msg, "Pushed! ~^_^~")
-            else
-                Host.say(msg, Message.sm_dupl)
-            end
-        else
-            Meta = sm[math.random(math.max(#sm,1))] or Message.sm_lost
-            Log.debug("Command :sm tell [Name => " .. Name .. "] [Meta => " .. Meta .."]")
-            Host.say(msg, Meta)
-        end
-    end,
-    help = Message.sm_help,
-    takeMeta = function(msg)
-        local Com, Name, Meta = msg:match("(:sm%.?%d*) *([^ ]*) *(.*)$")
-        if not Com then
-            return msg:match("(:sm%.?%d*) *([^ ]*) *$")
-        end
-        if Meta then
-            Meta = Meta:match("([^ ].*) *$")
-        end
-        if Meta then Meta = Meta:sub(0,50) end
-        return Com, Name, Meta
-    end
-}
 
 -- replace string that wrap by {name} with env[name]
 string.fill = function(str, env)
@@ -396,6 +363,10 @@ end
 -- match Context command and execute it
 local function match_execute_command(msg)
     -- reject bot to execute command
+    if not msg[1] then
+        Log.trace("not recognize command[%s]", msg or msg[2] or "")
+        return
+    end
     if msg[1]:match("bot") then
         if os.time() % 2 == 1 then
             Log.trace("BOT " .. msg[1] .." command refused")

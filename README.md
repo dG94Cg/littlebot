@@ -22,6 +22,7 @@ Wrote by *= Lua =*
 - [x] query msg
 - [ ] xmpp support
 - [x] weechat support
+- [-] hexchat support
 - [-] name swap
         > support by hexchat, not weechat now
 - [-] remote code update
@@ -35,6 +36,8 @@ Wrote by *= Lua =*
     * [ ] list download task from qbittorrent-nox
     * [ ] resume download task at qbittorrent-nox
     * [ ] delete download task at qbittorrent-nox
+- [ ] colorize msg!
+- [ ] privmsg support
 
 
 ## struct
@@ -73,3 +76,54 @@ Wrote by *= Lua =*
     > weechat.hook_proccess may as a hack way to support xmpp here
 - query.lua/last.lua    record the message from irc chat, :query {nickname}, :last {nickname} to list last word, :query.msg {msg} to find command
     > buggy one
+
+## Command
+
+- :sm     give user a mark, ``:sm littleme Admin`` as mark, ``:sm littleme`` as read
+- :say    let bot said something, ``:say hello world``
+- :lua    ``:lua ${code}``  execute the lua code with some protection
+    > print mean say to channel, say mean say to command sender
+    > usage: :lua print "hello world"
+- :last   ``:last ${nickname}``  to know last msg he said
+- :query  ``:query ${nickname}``  to know what he said at last 5 msg
+- :help   a urgly help manual
+- :auth   check out if you're authed, change the admin list at init.lua#Context.admin
+- :reload reload the code, warn: if code load error, bot will crash
+- :update update current code from git, you need fix the path before use
+- :mute tell bot to shut up or allow to speak
+
+
+## Hack and Development
+
+add lua file with ``require "bot.command"`` if you wana add some function.
+
+- Host.say
+
+    Host.say depends on Host.command
+    - @arg source :: ``{server="irc server name for weechat to find buffer",target="who you wana msg to, #channel_name or nickname"}``
+    - @arg msg    :: the message
+    - @arg option :: ``{channel=true}``, won't add command sender name as prefix like "user: msg" if channel is true ,design for further use
+- Command.retrieve
+
+    execute only when not command match, why do i add this????
+
+- Host.hook
+
+    execute at everytime when message reach
+
+- sanbox.lua
+
+    not safe sandbox here, impl it as your wish, code is .... kind of smelly, it should got loop protect and io,os,package,loadfile,dofile,load protect
+
+    > WARN: require is not protect by sandbox here, impl it as your need
+- command.fuc.execute = function (msg) the msg
+
+    msg is create by msg_head.lua
+    ```lua
+    msg = {
+        nickname
+    ,   msg
+    ,   server  =   server
+    ,   target  =   channel_name|nickname
+    }```
+    > not primsg support now

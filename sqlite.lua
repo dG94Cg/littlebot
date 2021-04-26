@@ -5,9 +5,9 @@ local Sqlite = {}
 setmetatable(Sqlite, {__index = function(_,_) return {} end})
 
 Sqlite.create = function(sqlite)
-    local sqlite    = sqlite or {}
+    local instance  = sqlite or {}
     setmetatable(sqlite, {__index = Sqlite})
-    return sqlite
+    return instance
 end
 
 Sqlite.database =   "bot.db"
@@ -24,6 +24,7 @@ Sqlite.sql      = {
     ,   findone     =   { template = "select * from msg_record where nickname = '%s' order by id desc limit 1;", type = "r" }
     ,   query       =   { template =  "select * from msg_record where nickname = '%s' order by id desc limit 5;", type = "r" }
     ,   match       =   { template = "select * from msg_record where msg like '%s' order by id desc limit 5;", type = "r" }
+    ,   __name      =   "msg_record"
 }
 
 
@@ -36,7 +37,7 @@ local format = function(str, args)
         log.trace("Sqlite: Simple format[%s]", str, args)
         return str:format(args)
     end
-    if str:match("#{[^}]*}") then
+    if str:match("#{[^}]*}") or #args == 0 then
         log.trace("Sqlite: Table format[%s]", str)
         return str:gsub("#{([^}]*)}", args)
     end
@@ -98,6 +99,7 @@ end
 
 -- @desc execute the real action
 Sqlite.exec     = function(self, proc, args)
+    log.debug("Execute Sql For [%s]", self.sql.__name)
     if args then
         return self:exec {   proc = proc
                          ,   args  = args
@@ -112,7 +114,7 @@ Sqlite.exec     = function(self, proc, args)
         if Sqlite.warn["exists"] then
             return
         end
-        Log.warn "sqlite3 not exists at path"
+        log.warn "sqlite3 not exists at path"
         return
     end
     if type(self.sql.init) == "table" then
