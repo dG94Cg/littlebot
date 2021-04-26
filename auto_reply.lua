@@ -1,11 +1,5 @@
 local log   =   require "bot.log"
 
-if not Host or not Host.hook then
-    log.error "Auto Reply require Host.hook"
-    error "Host not init?"
-end
-
-
 local stupid_question   =   {
             "有人么%?*$"    
         ,   "有人吗%?*$"    
@@ -30,7 +24,7 @@ local match_list    =   {
 
 -- auto reply list
 match_list[stupid_question] =   {
-        "没人,没人, 哪有人¯\_(ツ)_/¯"
+        "没人,没人, 哪有人¯\\_(ツ)_/¯"
     ,   "耐心点, irc频道早就不是即时聊天的主要选择了, 都挂着 时不时看看"
     ,   "又来? (｢・ω・)｢ 腻咋不半夜去敲邻居家门问问他睡了没?"
     ,   "召唤TJM! (┙>∧<)┙へ┻┻怼他! 乍乍乎乎的, 没点耐心"
@@ -42,7 +36,7 @@ local chobsd    =   {
     ,   option  =   {
             user    =   "^chobsd_*"
         ,   len_min =   -1
-        ,   len_max =   string.len("说腻妈呢")
+        ,   len_max =   string.len("说腻妈呢乍乍乎乎的")
     }
 }
 match_list[chobsd]  =   {
@@ -50,7 +44,7 @@ match_list[chobsd]  =   {
     ,   "是流量太贵, 还是腻时间太急, 说几句就balabala跑了"
     ,   "腻看看腻, 乍乍乎乎, 这是IRC好么"
     ,   "干啥 干啥 干啥呢腻!"
-    ,   "¯\_(ツ)_/¯"
+    ,   "¯\\_(ツ)_/¯"
 }
 
 match_list["干啥"]  =   {
@@ -123,12 +117,12 @@ local auto_reply    =   function(msg)
     -- if is table
     if type(output[r]) == "table" then
         local o = output[r].option
+        output[r].index = (output[r].index or 0 ) % #output[r] + 1
         if not o then
-            output[r].index = (output[r].index or 0 ) % #output[r] + 1
             Host.say(msg,output[r][output[r].index] or "啊?")
         end
         if  o.user then
-            if not msg[2]:match(o.user) then
+            if not msg[1]:match(o.user) then
                 return
             end
             if o.len_min and msg[2]:len() < o.len_min then
@@ -145,4 +139,18 @@ local auto_reply    =   function(msg)
     end
 end
 
+
+if arg and arg[1] == "test" then
+    -- test
+    Host = {say = print}
+    auto_reply({"chobsd", "干啥"})
+    return 
+end
+
+
+
+if not Host or not Host.hook then
+    log.error "Auto Reply require Host.hook"
+    error "Host not init?"
+end
 table.insert(Host.msg_listen, auto_reply)
