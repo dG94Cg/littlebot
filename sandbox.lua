@@ -1,3 +1,5 @@
+local log   =   require "bot.log"
+
 local sandbox = { rom = {}}
 local V1 = {}
 local V2 = {}

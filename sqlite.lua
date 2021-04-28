@@ -23,7 +23,7 @@ Sqlite.sql      = {
     ,   insert      =   { template = "insert into msg_record (server, channel, nickname, msg, at) values ('#{server}', '#{channel}', '#{nickname}', '#{msg}', '#{at}');", type = "w" }
     ,   findone     =   { template = "select * from msg_record where nickname = '%s' order by id desc limit 1;", type = "r" }
     ,   query       =   { template =  "select * from msg_record where nickname = '%s' order by id desc limit 5;", type = "r" }
-    ,   match       =   { template = "select * from msg_record where msg like '%s' order by id desc limit 5;", type = "r" }
+    ,   match       =   { template = "select * from msg_record where msg like '%%%s%%' order by id desc limit 5;", type = "r" }
     ,   __name      =   "msg_record"
 }
 
