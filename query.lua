@@ -128,6 +128,7 @@ Query.msg       =   function(criteria, lrex)
                         table.insert(buffer, string.format("%s:%s @ %s", v.nickname, v.msg, v.at))
                     end
                 else
+                    Log.info "not lrex"
                     table.insert(buffer, string.format("%s:%s @ %s", v.nickname, v.msg, v.at))
                 end
                 if #buffer >= 6 then
@@ -183,7 +184,6 @@ Command.query   =   {
             log.error(":query, fail, C[%s], method[%s], error: %s", criteria, method or "user", data)
             return
         end
-        Log.info("Out => [%s]", data)
         Host.say(msg, data, {channel = true})
     end
 }

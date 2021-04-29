@@ -64,21 +64,18 @@ if weechat then
 
     -- command for controll irc raw command
     -- @see Host.say it depends command
-    Host.command = function(command_str, source)
+    Host.command = function(source, command_str)
         if not command_str then
+            if type(source) == "string" then
+                return Host.command(null, source)
+            end
             return
         end
-        if type(command_str) == "table" then
-            for i,v in pairs(command_str) do 
-                Log.error("[%s] => [%s]", i, v)
-            end
-        end
-        Log.error("Stack: %s", debug.traceback())
         Log.trace("execute RAW Command " .. command_str)
         local buff = source and (source.server .. "," .. source.target)
                         or ""
         Log.debug("[NICK] buff: " .. buff .. " Command: ".. command_str)
-        weechat.command(buff or "", command_str)
+        weechat.command(weechat.buffer_search(buff) or "", command_str)
     end
     -- hook print, invoke the hook when message came, bot design for hexchat first
     -- so we got hook_print here not hook_signal here
@@ -379,7 +376,7 @@ local function match_execute_command(msg)
     if msg[1]:match("bot") then
         if os.time() % 2 == 1 then
             Log.trace("BOT " .. msg[1] .." command refused")
-            Host.say(msg, Message.reject_bot)
+            Host.command(msg, Message.reject_bot)
         end
         return
     end
