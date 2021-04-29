@@ -11,6 +11,11 @@ local record = function(msg)
     if not msg[1] then
         return
     end
+        -- won't record the bot say
+    if msg[1]:lower():match("^littlebot.*") then
+        log.trace("we don't record the bot[%s] said", msg[1])
+        return
+    end
     last_record[msg[1]] = last_record[msg[1]] or {}
     local last          = last_record[msg[1]]
     local swap          = {}

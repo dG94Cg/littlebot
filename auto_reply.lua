@@ -1,5 +1,7 @@
 local log   =   require "bot.log"
 
+require "bot.auto_reply_db"
+
 local stupid_question   =   {
             "有人么%?*$"    
         ,   "有人吗%?*$"    
@@ -11,9 +13,9 @@ local stupid_question   =   {
         ,   "^[喂唯惟唯]+%?*$"
         ,   "is someone here?*"
         ,   option  =   {
-            user    =   ".*"
-        ,   len_min =   -1
-        ,   len_max =   99999
+                user    =   ".*"
+            ,   len_min =   -1
+            ,   len_max =   99999
         }
 }
 
@@ -60,6 +62,9 @@ match_list["干啥"]  =   {
 }
 
 local auto_reply    =   function(msg)
+    if not msg[1] then
+        return
+    end
     if not msg[2] then
         return
     end

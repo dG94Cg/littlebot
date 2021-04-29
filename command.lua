@@ -1,4 +1,4 @@
-local GitCommandGen= function(command)
+local GitCommandGen = function(command)
     return "git --git-dir=$HOME/bot/.git --work-tree=$HOME/bot " .. command
 end
 

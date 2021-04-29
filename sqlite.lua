@@ -21,9 +21,9 @@ Sqlite.sql      = {
                     ,   "create index if not exists i_at_record on msg_record(at);"
                     }
     ,   insert      =   { template = "insert into msg_record (server, channel, nickname, msg, at) values ('#{server}', '#{channel}', '#{nickname}', '#{msg}', '#{at}');", type = "w" }
-    ,   findone     =   { template = "select * from msg_record where nickname = '%s' order by id desc limit 1;", type = "r" }
-    ,   query       =   { template =  "select * from msg_record where nickname = '%s' order by id desc limit 5;", type = "r" }
-    ,   match       =   { template = "select * from msg_record where msg like '%%%s%%' order by id desc limit 5;", type = "r" }
+    ,   findone     =   { template = "select * from msg_record where nickname = '%s' and id < %s order by id desc limit %s;", type = "r" }
+    ,   query       =   { template =  "select * from msg_record where nickname = '%s' and id < %s order by id desc limit %s;", type = "r" }
+    ,   match       =   { template = "select * from msg_record where id < %s and msg like '%%%s%%' order by id desc limit %s;", type = "r" }
     ,   __name      =   "msg_record"
 }
 
@@ -99,7 +99,7 @@ end
 
 -- @desc execute the real action
 Sqlite.exec     = function(self, proc, args)
-    log.debug("Execute Sql For [%s]", self.sql.__name)
+    log.debug("Execute Sql For [%s]", self.sql.__name or "Unamed Sql")
     if args then
         return self:exec {   proc = proc
                          ,   args  = args
@@ -141,6 +141,9 @@ end
 
 -- @name replace the [" \ '] with wrapped by \
 local replace = function(str)
+    if type(str) ~= "string" then
+        return str
+    end
     local r_str = str:gsub("\\", "\\\\"):gsub("\"", "\\\""):gsub("'", "\\'")
     log.trace("Sql:Replace => %s", r_str)
     return r_str
