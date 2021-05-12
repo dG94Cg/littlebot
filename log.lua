@@ -85,6 +85,9 @@ log.file_handler = function(path, custom)
 end
 
 log.dump = function(x)
+    if not x then
+        return "nil"
+    end
     local buff = {"{ "}
     for i,v in pairs(x) do
         if (type(v) == "string" or type(v) == "number")

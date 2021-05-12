@@ -8,18 +8,26 @@ local LIB_LOAD = {}
 -- main 
 local __main__ = function ()
     if  arg and arg[1] == "test" then
-        print "test 1"
+        weechat = {}
+        weechat.print = print
+        print "# test 1"
         print (sandbox.run "print(1)")
         assert(print)
-        print "test 1 with print env"
+        print "# test 1 with print env"
         print (sandbox.run ("print(1)", function (env) env._G.print = print end))
-        print "test loop"
+        print "# test loop"
         print (sandbox.run ("while(1) do end"))
-        print "test print _G"
+        print "# test print _G"
         print (sandbox.run ("for i,v in pairs(io) do print(i,v) end", function (env) env._G.print = print end))
-        print "test load"
+        print "# test load"
         local code = "load(\"print(1)\")()"
-        print (sandbox.run ("load (code)()", function(_,_G) _G.code = code end))
+        print (sandbox.run ("load (code)()", function(_,_G) _G.code = code _G.print = print end))
+        print "# pcall test => should display ok"
+        sandbox.run("pcall(print,\"ok\")", function(_,_G) _G.print = print end)
+        print "# io print => should be empty"
+        sandbox.run("for i,v in pairs(io) do print(\"io\",i,v) end", function(_,_G) _G.print = print end)
+        print "# If Context exist => should not print anything"
+        print ((sandbox.run ("for i,v in pairs(_G) do print(i,v) end", function(_,_G) _G.print = print end)))
     end
 end
 
@@ -146,6 +154,8 @@ local protect_env = function(context)
         loadfile = loadfile,
         dofile = dofile,
         package = package,
+        weechat = weechat,
+        Host    = Host,
     }
     if context and type(context.protect) == "table" then
         -- copy the protect
@@ -213,10 +223,14 @@ sandbox.run = function (func_str, context)
         -- set loop protect in debug
         loop_protect(protect_env.debug)
         -- execute code
-        do
-            -- protect protect
-            local protect 
-            suc, res = pcall(fuc)
+        if _VERSION == "Lua 5.1" or setfenv then
+            suc, res = pcall(setfenv(fuc, _G[context.id]))
+        else
+            do
+                -- protect protect
+                local protect 
+                suc, res = pcall(fuc)
+            end
         end
         protect_env.debug.sethook()
     else
