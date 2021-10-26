@@ -1,5 +1,7 @@
 # IRC BOT
 
+## DEPRECATED, my mind flee away. don't worry there is a lot IRC BOT exists at github, and my one is ungly and useless. It even require a weechat.
+
 there is a little irc bot for hexchat and weechat.   
 > at first i thought hexchat-bot is more easier to write. actually it does
 
